@@ -1,7 +1,7 @@
 title: Detect Cert Creation
 id: 958fa151-121b-5fc7-5e0b-000000002b00
 status: experimental
-description: Detects install of user certificates 
+description: Detects install of user certificates
 references:
     - SubTee https://gist.github.com/postfix/964111e24628aca6d9249ec004ecb806
 author: Dan Kennedy
@@ -12,17 +12,15 @@ tags:
 logsource:
     product: windows
     service: sysmon
-
 detection:
     selection:
         EventID: 1
         Image: '*\certutil.exe'
         Initiated: 'true'
     filter:
-        ParentProcess: 'ParentImage: *\*\.exe'
-        LocalFileCall:
-            - 'certutil -importpfx*'
-     condition: selection and filter
+        ParentProcess: 'ParentImage: *\.exe'
+        LocalFileCall: 'certutil -importpfx*'
+      condition: selection and filter
 falsepositives:
     - Loading and decoding of certificates from legitimate processes.
 level: medium
