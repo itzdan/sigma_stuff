@@ -19,7 +19,7 @@ detection:
         Image: '*\certutil.exe'
         Initiated: 'true'
     filter:
-        ParentProcess: 'ParentImage: C:\Windows\System32\cmd.exe'
+        ParentProcess: 'ParentImage: *\*.exe'
         LocalFileCall:
             - 'certutil -importpfx*'
      condition: selection and filter
