@@ -19,7 +19,7 @@ detection:
         Initiated: 'true'
     filter:
         ParentProcess: 'ParentImage: *\.exe'
-        LocalFileCall: 'sfc /SCANFILE=*\SSShim.dll'
+        LocalFileCall: 'sfc /SCANFILE=*\.exe*'
       condition: selection and filter
 falsepositives:
     - Legitimate scanning of files.
