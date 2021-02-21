@@ -1,0 +1,26 @@
+title: Detect SFC dll execution
+id: bc1b005a-8303-41ca-9253-af7de7c3e5fd
+status: experimental
+description: Detects usage of sfc binary loading predetermined SSShim.dll 
+references:
+    - https://twitter.com/0gtweet/status/1363107343018385410/
+author: Dan Kennedy
+date: 2020/02/21
+tags:
+    - attack.t1218
+    - attack.execution
+logsource:
+    product: windows
+    service: sysmon
+detection:
+    selection:
+        EventID: 1
+        Image: '*\sfc.exe'
+        Initiated: 'true'
+    filter:
+        ParentProcess: 'ParentImage: *\.exe'
+        LocalFileCall: 'sfc /SCANFILE=*\SSShim.dll'
+      condition: selection and filter
+falsepositives:
+    - Legitimate scanning of files.
+level: medium
