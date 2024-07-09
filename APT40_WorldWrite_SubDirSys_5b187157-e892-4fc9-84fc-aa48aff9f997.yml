@@ -1,0 +1,133 @@
+Title: World Writable Execution - Non-Temp System Subdirectory
+
+ID: 5b187157-e892-4fc9-84fc-aa48aff9f997
+
+Description: Detect process execution from a world writable location in a subdirectory of the Windows OS install location.
+
+Background:
+
+This rule looks specifically for execution out of world writable directories within C:\ and particularly C:\Windows\*, with the exception of C:\Windows\Temp (which is more broadly used by benign applications and thus a lower confidence malicious indicator).
+
+AppData folders are excluded if a file is run as SYSTEM - this is a benign way in which many temporary application files are executed.
+
+After completing an initial network baseline and identifying known benign executions from these locations, this rule should rarely fire.
+
+Investigation:
+
+Examine information directly associated with this file execution, such as the user context, execution integrity level, immediate follow-on activity and images loaded by the file.
+Investigate contextual process, network, file and other supporting data on the host to help make an assessment as to whether the activity is malicious.
+If necessary attempt to collect a copy of the file for reverse engineering to determine whether it is legitimate.
+References:
+
+https://gist.github.com/mattifestation/5f9de750470c9e0e1f9c9c33f0ec3e56
+https://www.elastic.co/guide/en/security/current/process-execution-from-an-unusual-directory.html
+Author: ASD's ACSC
+
+Date: 2024/06/19
+
+Status: experimental
+
+Tags:
+
+    - tlp.green
+    - classification.au.official
+    - attack.execution
+
+Log Source:
+
+    category: process_creation
+    product: windows
+
+Detection:
+
+    writable_path:
+        Image|contains:
+        - ':\\$Recycle.Bin\\'
+        - ':\\AMD\\Temp\\'
+        - ':\\Intel\\'
+        - ':\\PerfLogs\\'
+        - ':\\Windows\\addins\\'
+        - ':\\Windows\\appcompat\\'
+        - ':\\Windows\\apppatch\\'
+        - ':\\Windows\\AppReadiness\\'
+        - ':\\Windows\\bcastdvr\\'
+        - ':\\Windows\\Boot\\'
+        - ':\\Windows\\Branding\\'
+        - ':\\Windows\\CbsTemp\\'
+        - ':\\Windows\\Containers\\'
+        - ':\\Windows\\csc\\'
+        - ':\\Windows\\Cursors\\'
+        - ':\\Windows\\debug\\'
+        - ':\\Windows\\diagnostics\\'
+        - ':\\Windows\\DigitalLocker\\'
+        - ':\\Windows\\dot3svc\\'
+        - ':\\Windows\\en-US\\'
+        - ':\\Windows\\Fonts\\'
+        - ':\\Windows\\Globalization\\'
+        - ':\\Windows\\Help\\'
+        - ':\\Windows\\IdentityCRL\\'
+        - ':\\Windows\\IME\\'
+        - ':\\Windows\\ImmersiveControlPanel\\'
+        - ':\\Windows\\INF\\'
+        - ':\\Windows\\intel\\'
+        - ':\\Windows\\L2Schemas\\'
+        - ':\\Windows\\LiveKernelReports\\'
+        - ':\\Windows\\Logs\\'
+        - ':\\Windows\\media\\'
+        - ':\\Windows\\Migration\\'
+        - ':\\Windows\\ModemLogs\\'
+        - ':\\Windows\\ms\\'
+        - ':\\Windows\\OCR\\'
+        - ':\\Windows\\panther\\'
+        - ':\\Windows\\Performance\\'
+        - ':\\Windows\\PLA\\'
+        - ':\\Windows\\PolicyDefinitions\\'
+        - ':\\Windows\\Prefetch\\'
+        - ':\\Windows\\PrintDialog\\'
+        - ':\\Windows\\Provisioning\\'
+        - ':\\Windows\\Registration\\CRMLog\\'
+        - ':\\Windows\\RemotePackages\\'
+        - ':\\Windows\\rescache\\'
+        - ':\\Windows\\Resources\\'
+        - ':\\Windows\\SchCache\\'
+        - ':\\Windows\\schemas\\'
+        - ':\\Windows\\security\\'
+        - ':\\Windows\\ServiceState\\'
+        - ':\\Windows\\servicing\\'
+        - ':\\Windows\\Setup\\'
+        - ':\\Windows\\ShellComponents\\'
+        - ':\\Windows\\ShellExperiences\\'
+        - ':\\Windows\\SKB\\'
+        - ':\\Windows\\TAPI\\'
+        - ':\\Windows\\Tasks\\'
+        - ':\\Windows\\TextInput\\'
+        - ':\\Windows\\tracing\\'
+        - ':\\Windows\\Vss\\'
+        - ':\\Windows\\WaaS\\'
+        - ':\\Windows\\Web\\'
+        - ':\\Windows\\wlansvc\\'
+        - ':\\Windows\\System32\\Com\\dmp\\'
+        - ':\\Windows\\System32\\FxsTmp\\'
+        - ':\\Windows\\System32\\Microsoft\\Crypto\\RSA\\MachineKeys\\'
+        - ':\\Windows\\System32\\Speech\\'
+        - ':\\Windows\\System32\\spool\\drivers\\color\\'
+        - ':\\Windows\\System32\\spool\\PRINTERS\\'
+        - ':\\Windows\\System32\\spool\\SERVERS\\'
+        - ':\\Windows\\System32\\Tasks_Migrated\\Microsoft\\Windows\\PLA\\System\\'
+        - ':\\Windows\\System32\\Tasks\\'
+        - ':\\Windows\\SysWOW64\\Com\\dmp\\'
+        - ':\\Windows\\SysWOW64\\FxsTmp\\'
+        - ':\\Windows\\SysWOW64\\Tasks\\'
+    appdata:
+        Image|contains: '\\AppData\\'
+        User: 'SYSTEM'
+    condition: writable_path and not appdata
+
+False Positives:
+
+Allowlist auditing applications have been observed running executables from these directories.
+
+It is plausible that scripts and administrative tools used in the monitored environment(s) may be located in one of these directories and should be addressed on a case-by-case basis.
+
+Level: high
+
