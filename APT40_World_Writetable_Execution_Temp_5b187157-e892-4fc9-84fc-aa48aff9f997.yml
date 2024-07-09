@@ -1,0 +1,55 @@
+Title: World Writable Execution - Temp
+
+ID: d2fa2d71-fbd0-4778-9449-e13ca7d7505c
+
+Description: Detect process execution from C:\Windows\Temp.
+
+Background:
+
+This rule looks specifically for execution out of C:\Windows\Temp\*. Temp is more broadly used by benign applications and thus a lower confidence malicious indicator than execution out of other world writable subdirectories in C:\Windows.
+
+Removing applications executed by the SYSTEM or NETWORK SERVICE users substantially reduces the quantity of benign activity selected by this rule.
+
+This means that the rule may miss malicious executions at a higher privilege level but it is recommended to use other rules to determine if a user is attempting to elevate privileges to SYSTEM.
+
+Investigation:
+Examine information directly associated with this file execution, such as the user context, execution integrity level, immediate follow-on activity and images loaded by the file.
+Investigate contextual process, network, file and other supporting data on the host to help make an assessment as to whether the activity is malicious.
+If necessary attempt to collect a copy of the file for reverse engineering to determine whether it is legitimate.
+
+References:
+https://www.elastic.co/guide/en/security/current/process-execution-from-an-unusual-directory.html
+
+Author: ASD's ACSC
+Date: 2024/06/19
+Status: experimental
+Tags:
+    - tlp.green
+    - classification.au.official
+    - attack.execution
+Log Source:
+    category: process_creation
+    product: windows
+Detection:
+    temp:
+        Image|startswith: 'C:\\Windows\\Temp\\'
+    common_temp_path:
+        Image|re|ignorecase: 'C:\\Windows\\Temp\\\{[a-fA-F0-9]{8}-([a-fA-F0-9]{4}-){3}[a-fA-F0-9]{12}\}\\'
+    system_user:
+        User:
+        - 'SYSTEM'
+        - 'NETWORK SERVICE'
+    dismhost:
+        Image|endswith: 'dismhost.exe'
+    known_parent:
+        ParentImage|endswith:
+        - '\\esif_uf.exe'
+        - '\\vmtoolsd.exe'
+        - '\\cwainstaller.exe'
+        - '\\trolleyexpress.exe'
+    condition: temp and not (common_temp_path or system_user or dismhost or known_parent)
+
+False Positives:
+Allowlist auditing applications have been observed running executables from Temp.
+Temp will legitimately contain an array of setup applications and launchers, so it will be worth considering how prevalent this behaviour is on a monitored network (and whether or not it can be allowlisted) before deploying this rule.
+Level: low
