@@ -1,0 +1,53 @@
+Title: World Writable Execution - Users
+
+ID: 6dda3843-182a-4214-9263-925a80b4c634
+
+Description: Detect process execution from C:\Users\Public\* and other world writable folders within Users.
+
+Background:
+
+AppData folders are excluded if a file is run as SYSTEM - this is a benign way in which many temporary application files are executed.
+
+Investigation:
+
+Examine information directly associated with this file execution, such as the user context, execution integrity level, immediate follow-on activity and images loaded by the file.
+Investigate contextual process, network, file and other supporting data on the host to help make an assessment as to whether the activity is malicious.
+If necessary attempt to collect a copy of the file for reverse engineering to determine whether it is legitimate.
+References:
+
+https://www.elastic.co/guide/en/security/current/process-execution-from-an-unusual-directory.html
+Author: ASD's ACSC
+
+Date: 2024/06/19
+
+Status: experimental
+
+Tags:
+
+    - tlp.green
+    - classification.au.official
+    - attack.execution
+
+Log Source:
+
+    category: process_creation
+    product: windows
+
+Detection:
+
+    users:
+        Image|contains:
+        - ':\\Users\\All Users\\'
+        - ':\\Users\\Contacts\\'
+        - ':\\Users\\Default\\'
+        - ':\\Users\\Public\\'
+        - ':\\Users\\Searches\\'
+    appdata:
+        Image|contains: '\\AppData\\'
+        User: 'SYSTEM'
+    condition: users and not appdata
+
+False Positives:
+
+It is plausible that scripts and administrative tools used in the monitored environment(s) may be located in Public or a subdirectory and should be addressed on a case-by-case basis.
+Level: medium
